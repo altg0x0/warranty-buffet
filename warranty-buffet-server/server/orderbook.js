@@ -1,6 +1,8 @@
 // We try to avoid ES classes here
 'use strict';
 const SortedSet = require("collections/sorted-set");
+const EventEmitter = require('events');
+
 
 const OrderTypes = Object.freeze({
   BUY:   Symbol("buy"),
@@ -18,12 +20,14 @@ function OrderBook(symbol) {
   const ret = Object.create(null);
   ret.orders = {buy: SortedSet(), sell: SortedSet()};
   for (const i of Object.keys(ret.orders).map(x => ret.orders[x])) {
-    console.log(i);
     i.contentCompare = (a, b) => b.price - a.price;
     i.contentEquals = (a, b) => Math.abs(a.price - b.price) < 1e-10;
   }
   ret.newOrder = newOrder;
   ret.symbol = symbol;
+  ret.processOrder = processOrder;
+  ret.dealEmitter = new class DealEmitter extends EventEmitter {};
+  ret.startTradeCycle = tradeCycle;
   return ret;
 }
 
@@ -38,7 +42,6 @@ function newOrder(typicalQty, price) {
   }
   const orderType = Math.random() > .5 ? OrderTypes.BUY : OrderTypes.SELL;
   const orderSet = (orderType === OrderTypes.BUY) ? this.orders.buy : this.orders.sell;
-  const oppositeOrdersSet = (orderType === OrderTypes.SELL) ? this.orders.buy : this.orders.sell;
   const order = {
     price: price,
     fullQty: qty,
@@ -46,6 +49,12 @@ function newOrder(typicalQty, price) {
     unfulfilledQty: qty,
     orderSet: orderSet,
   };
+  processOrder.bind(this, order)();
+}
+
+function processOrder(order) {
+  const orderType = order.type;
+  const oppositeOrdersSet = (orderType === OrderTypes.SELL) ? this.orders.buy : this.orders.sell;
   while (true) {
     const buyOrder = (orderType === OrderTypes.BUY)? order : oppositeOrdersSet.min();
     const sellOrder = (orderType === OrderTypes.SELL)? order : oppositeOrdersSet.max();
@@ -53,6 +62,7 @@ function newOrder(typicalQty, price) {
     if (oppositeOrder == null || buyOrder.price < sellOrder.price)
       break;
     const dealQty = Math.min(buyOrder.unfulfilledQty, sellOrder.unfulfilledQty);
+    this.dealEmitter.emit("dealComplete", {price: oppositeOrder.price, qty: dealQty});
     for (const i of [buyOrder, sellOrder]) {
       i.unfulfilledQty -= dealQty;
       if (i.unfulfilledQty === 0) {
@@ -60,10 +70,9 @@ function newOrder(typicalQty, price) {
       }
     }
     if (order.unfulfilledQty === 0)
-      return;
-    // TODO: refactor ASAP
-  }
-  orderSet.push(order);
+      return;}
+  order.orderSet.push(order);
+
 }
 
 // https://stackoverflow.com/questions/25582882/javascript-math-random-normal-distribution-gaussian-bell-curve
@@ -100,16 +109,22 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function tradeCycle() {
-  const orderBook = new OrderBook("PEAR");
-  let value = 100;
+async function tradeCycle(printOrders = false) {
+  const orderBook = this;
+  // let value = 100;
   let price = 100;
   while (true) {
-    clear();
     orderBook.newOrder(1000, price);
     price += Math.floor(Math.abs(randNormal()) * 3) / 3 * (Math.random() > .5 ? 1 : -1);
-    printOrderBook(orderBook);
+    if(printOrders) {
+      clear();
+      printOrderBook(orderBook);
+    }
     await sleep(50 * (1 - randNormal() / 2));
   }
 }
-tradeCycle();
+if (require.main === module){
+  tradeCycle();
+}
+
+module.exports = OrderBook;

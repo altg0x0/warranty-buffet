@@ -1,0 +1,25 @@
+{
+  "name": "warranty-buffet-server",
+  "version": "0.0.1",
+  "description": "The node.js server app for warranty-buffet",
+  "main": "server.js",
+  "dependencies": {
+    "collections": "^5.1.9"
+  },
+  "devDependencies": {
+    "chart.js": "^2.8.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/altg0x0/warranty-buffet.git"
+  },
+  "author": "Altg0x0",
+  "license": "Unlicense",
+  "bugs": {
+    "url": "https://github.com/altg0x0/warranty-buffet/issues"
+  },
+  "homepage": "https://github.com/altg0x0/warranty-buffet#readme"
+}
