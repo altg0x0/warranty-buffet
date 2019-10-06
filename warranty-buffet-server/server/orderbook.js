@@ -17,7 +17,7 @@ const Colors = Object.freeze({
 
 
 function OrderBook(symbol) {
-  const ret = Object.create(null);
+  const ret = new.target ? this : Object.create(null);
   ret.orders = {buy: SortedSet(), sell: SortedSet()};
   for (const i of Object.keys(ret.orders).map(x => ret.orders[x])) {
     i.contentCompare = (a, b) => b.price - a.price;
