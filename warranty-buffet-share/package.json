@@ -1,0 +1,22 @@
+{
+  "name": "warranty-buffet-share",
+  "version": "0.0.1",
+  "description": "A package required for both warranty-buffet server and client",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/altg0x0/warranty-buffet.git"
+  },
+  "author": "Altg0x0",
+  "license": "Unlicense",
+  "bugs": {
+    "url": "https://github.com/altg0x0/warranty-buffet/issues"
+  },
+  "homepage": "https://github.com/altg0x0/warranty-buffet#readme",
+  "dependencies": {
+    "collections": "^5.1.9"
+  }
+}
